@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore QR Code - Scopri le Ricette</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #result {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+        
+        #qrCanvas {
+            border: 3px solid #f0f0f0;
+            border-radius: 12px;
+            max-width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .download-btn {
+            margin-top: 20px;
+            background: #4CAF50;
+        }
+        
+        .download-btn:hover {
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .error {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍳 Generatore QR Code</h1>
+        <p class="subtitle">Crea QR code per le tue ricette</p>
+        
+        <div class="input-group">
+            <label for="urlInput">Inserisci il link della pagina web:</label>
+            <input 
+                type="url" 
+                id="urlInput" 
+                placeholder="https://esempio.com/ricette"
+                required
+            >
+            <div class="error" id="errorMsg">Per favore inserisci un link valido</div>
+        </div>
+        
+        <button onclick="generateQR()" id="generateBtn">Genera QR Code</button>
+        
+        <div class="loading" id="loading">Generazione in corso...</div>
+        
+        <div id="result">
+            <canvas id="qrCanvas"></canvas>
+            <button onclick="downloadQR()" class="download-btn">📥 Scarica QR Code</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        let currentQRDataURL = null;
+
+        function isValidURL(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function generateQR() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const generateBtn = document.getElementById('generateBtn');
+
+            // Validazione
+            errorMsg.style.display = 'none';
+            
+            if (!url || !isValidURL(url)) {
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // Mostra loading
+            loading.style.display = 'block';
+            generateBtn.disabled = true;
+            result.style.display = 'none';
+
+            // Simula un piccolo delay per l'effetto loading
+            setTimeout(() => {
+                createQRWithText(url);
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+                result.style.display = 'block';
+            }, 500);
+        }
+
+        function createQRWithText(url) {
+            const canvas = document.getElementById('qrCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Dimensioni canvas
+            const canvasSize = 400;
+            const qrSize = 300;
+            const textHeight = 60;
+            
+            canvas.width = canvasSize;
+            canvas.height = canvasSize + textHeight;
+
+            // Sfondo bianco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Crea QR code temporaneo
+            const tempDiv = document.createElement('div');
+            tempDiv.style.display = 'none';
+            document.body.appendChild(tempDiv);
+
+            const qr = new QRCode(tempDiv, {
+                text: url,
+                width: qrSize,
+                height: qrSize,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Aspetta che l'immagine sia generata
+            setTimeout(() => {
+                const qrImg = tempDiv.querySelector('img');
+                
+                // Disegna il testo sopra
+                ctx.fillStyle = '#333333';
+                ctx.font = 'bold 32px Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SCOPRI LE RICETTE', canvasSize / 2, 40);
+
+                // Disegna il QR code sotto il testo
+                const qrX = (canvasSize - qrSize) / 2;
+                const qrY = textHeight;
+                ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+                // Salva per il download
+                currentQRDataURL = canvas.toDataURL('image/png');
+
+                // Rimuovi elemento temporaneo
+                document.body.removeChild(tempDiv);
+            }, 100);
+        }
+
+        function downloadQR() {
+            if (!currentQRDataURL) return;
+
+            const link = document.createElement('a');
+            link.download = 'qr-code-ricette.png';
+            link.href = currentQRDataURL;
+            link.click();
+        }
+
+        // Permetti di premere Enter per generare
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQR();
+            }
+        });
+    </script>
+</body>
+</html>
