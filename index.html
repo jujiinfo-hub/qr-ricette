@@ -13,7 +13,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #558B2F 0%, #33691E 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -28,7 +28,7 @@
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #558B2F 0%, #33691E 100%);
             color: white;
             padding: 30px 40px;
             text-align: center;
@@ -66,9 +66,9 @@
         }
         
         .tab.active {
-            color: #667eea;
+            color: #558B2F;
             background: white;
-            border-bottom-color: #667eea;
+            border-bottom-color: #558B2F;
         }
         
         .tab-content {
@@ -106,7 +106,7 @@
         input[type="url"]:focus,
         input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #558B2F;
         }
         
         .button {
@@ -121,13 +121,13 @@
         }
         
         .button-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #558B2F 0%, #33691E 100%);
             color: white;
         }
         
         .button-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(85, 139, 47, 0.4);
         }
         
         .button-success {
@@ -169,7 +169,7 @@
         }
         
         .qr-count {
-            background: #667eea;
+            background: #558B2F;
             color: white;
             padding: 5px 15px;
             border-radius: 20px;
@@ -197,7 +197,7 @@
         }
         
         .qr-item:hover {
-            border-color: #667eea;
+            border-color: #558B2F;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
@@ -473,7 +473,7 @@
                 </div>
             </div>
             
-            <div id="successBadge" style="display: none; background: #4CAF50; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: 600; animation: slideDown 0.3s ease;">
+            <div id="successBadge" style="display: none; background: #558B2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: 600; animation: slideDown 0.3s ease;">
                 ✅ QR Code aggiunto alla lista!
             </div>
             
@@ -654,8 +654,8 @@
                 const qrImg = tempDiv.querySelector('img');
                 
                 // Testo in alto: "SCOPRI LE RICETTE"
-                ctx.fillStyle = '#333333';
-                ctx.font = 'bold 26px Arial, sans-serif';
+                ctx.fillStyle = '#558B2F';
+                ctx.font = 'bold 34px Arial, sans-serif';
                 ctx.textAlign = 'center';
                 const topTextY = paddingTop + 28;
                 ctx.fillText('SCOPRI LE RICETTE', canvasSize / 2, topTextY);
@@ -667,7 +667,7 @@
                 
                 // Testo in basso: ingrediente (se presente)
                 if (text) {
-                    ctx.fillStyle = '#333333';
+                    ctx.fillStyle = '#558B2F';
                     ctx.font = 'bold 28px Arial, sans-serif';
                     ctx.textAlign = 'center';
                     const bottomTextY = qrY + qrSize + paddingBetweenQRAndBottom + 30;
