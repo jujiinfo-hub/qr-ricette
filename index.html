@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generatore QR Code - Scopri le Ricette</title>
+    <title>Generatore e Stampa QR Code</title>
     <style>
         * {
             margin: 0;
@@ -15,35 +15,72 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
         
         .container {
+            max-width: 1000px;
+            margin: 0 auto;
             background: white;
-            padding: 40px;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 500px;
-            width: 100%;
+            overflow: hidden;
         }
         
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
             font-size: 28px;
-            text-align: center;
+            margin-bottom: 8px;
         }
         
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            text-align: center;
+        .header p {
             font-size: 14px;
+            opacity: 0.9;
         }
         
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            background: #ebebeb;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Sezione Genera QR */
         .input-group {
             margin-bottom: 25px;
         }
@@ -70,54 +107,41 @@
             border-color: #667eea;
         }
         
-        button {
+        .button {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
         }
         
-        button:hover {
+        .button-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .button-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
         
-        button:active {
-            transform: translateY(0);
+        .button-success {
+            background: #4CAF50;
+            color: white;
         }
         
-        button:disabled {
+        .button-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .button:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
-        }
-        
-        #result {
-            margin-top: 30px;
-            text-align: center;
-            display: none;
-        }
-        
-        #qrCanvas {
-            border: 3px solid #f0f0f0;
-            border-radius: 12px;
-            max-width: 100%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .download-btn {
-            margin-top: 20px;
-            background: #4CAF50;
-        }
-        
-        .download-btn:hover {
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
         }
         
         .error {
@@ -127,44 +151,470 @@
             display: none;
         }
         
-        .loading {
-            display: none;
+        /* Sezione Carica */
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
             text-align: center;
-            margin-top: 20px;
-            color: #667eea;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .upload-zone:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+        
+        .upload-zone.dragover {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        /* Lista QR */
+        .qr-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .qr-list-header h3 {
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .qr-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .qr-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .qr-item {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .qr-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .qr-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .qr-item-name {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        
+        .qr-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .qr-item-btn {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-download {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: #45a049;
+        }
+        
+        .btn-remove {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-remove:hover {
+            background: #da190b;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        /* Controlli stampa */
+        .print-controls {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1565C0;
+            margin-bottom: 20px;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        /* Anteprima stampa */
+        .preview-container {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        /* Stili per la stampa */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            
+            .header, .tabs, .tab-content, .qr-list-header, 
+            .qr-list, .print-controls, .button-group, .preview-title {
+                display: none !important;
+            }
+            
+            .preview-container {
+                display: block !important;
+            }
+            
+            .a4-page {
+                page-break-after: always;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .a4-page:last-child {
+                page-break-after: avoid;
+            }
+        }
+        
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 20px auto;
+            padding: 10mm;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            display: grid;
+            gap: 0;
+        }
+        
+        .qr-slot {
+            border: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .qr-slot img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .cut-line-horizontal,
+        .cut-line-vertical {
+            position: absolute;
+            background: #999;
+        }
+        
+        .cut-line-horizontal {
+            height: 1px;
+            width: 100%;
+            left: 0;
+        }
+        
+        .cut-line-vertical {
+            width: 1px;
+            height: 100%;
+            top: 0;
+        }
+        
+        @media screen {
+            .cut-line-horizontal,
+            .cut-line-vertical {
+                background: repeating-linear-gradient(
+                    90deg,
+                    #999 0px,
+                    #999 5px,
+                    transparent 5px,
+                    transparent 10px
+                );
+            }
+            
+            .cut-line-vertical {
+                background: repeating-linear-gradient(
+                    0deg,
+                    #999 0px,
+                    #999 5px,
+                    transparent 5px,
+                    transparent 10px
+                );
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🍳 Generatore QR Code</h1>
-        <p class="subtitle">Crea QR code per le tue ricette</p>
-        
-        <div class="input-group">
-            <label for="urlInput">Inserisci il link della pagina web:</label>
-            <input 
-                type="url" 
-                id="urlInput" 
-                placeholder="https://esempio.com/ricette"
-                required
-            >
-            <div class="error" id="errorMsg">Per favore inserisci un link valido</div>
+        <div class="header">
+            <h1>🍳 QR Code Manager</h1>
+            <p>Genera e stampa i tuoi QR code per ricette</p>
         </div>
         
-        <button onclick="generateQR()" id="generateBtn">Genera QR Code</button>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('generate')">
+                ➕ Genera QR
+            </div>
+            <div class="tab" onclick="switchTab('print')">
+                🖨️ Stampa
+            </div>
+        </div>
         
-        <div class="loading" id="loading">Generazione in corso...</div>
+        <!-- TAB 1: Genera QR -->
+        <div id="generateTab" class="tab-content active">
+            <div class="input-group">
+                <label for="urlInput">Inserisci il link della pagina web:</label>
+                <input 
+                    type="url" 
+                    id="urlInput" 
+                    placeholder="https://esempio.com/ricette"
+                    required
+                >
+                <div class="error" id="errorMsg">Per favore inserisci un link valido</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="ingredientInput">Testo da mostrare sul QR code:</label>
+                <input 
+                    type="text" 
+                    id="ingredientInput" 
+                    placeholder="es: ROSMARINO"
+                    style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; width: 100%;"
+                >
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                    💡 Lascia vuoto per usare "SCOPRI LE RICETTE" come testo predefinito
+                </div>
+            </div>
+            
+            <div style="background: #f0f7ff; border: 2px solid #2196F3; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <h4 style="color: #1976D2; margin: 0; flex: 1;">📊 Tracking con Bitly</h4>
+                    <label style="display: flex; align-items: center; margin: 0; cursor: pointer;">
+                        <input type="checkbox" id="bitlyEnabled" checked style="margin-right: 8px; width: 18px; height: 18px; cursor: pointer;">
+                        <span style="font-size: 14px; color: #555;">Abilita tracking</span>
+                    </label>
+                </div>
+                
+                <div id="bitlyFields">
+                    <div id="bitlyTokenStatus" style="display: none; margin-bottom: 15px; padding: 12px; background: #e8f5e9; border-left: 4px solid #4CAF50; border-radius: 6px;">
+                        <div style="font-size: 14px; color: #2e7d32; font-weight: 600;">✅ Token Bitly configurato</div>
+                        <button onclick="removeBitlyToken()" style="margin-top: 8px; padding: 6px 12px; background: #f44336; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Rimuovi Token</button>
+                    </div>
+                    
+                    <div id="bitlyTokenInput" style="display: none;">
+                        <label style="font-size: 13px; margin-bottom: 5px; display: block;">Access Token Bitly:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input 
+                                type="password" 
+                                id="bitlyToken" 
+                                placeholder="Inserisci il tuo token Bitly"
+                                style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;"
+                            >
+                            <button onclick="saveBitlyToken()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; white-space: nowrap;">Salva Token</button>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                            🔒 Il token viene salvato solo nel tuo browser, non viene condiviso
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        💡 Con Bitly attivo, ogni QR avrà un link tracciato (es: bit.ly/rosmarino-xxx) che ti permette di vedere le statistiche dei click
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="generateQR()" class="button button-primary" id="generateButton">Genera e Aggiungi alla Lista</button>
+            
+            <canvas id="qrCanvas" style="display: none;"></canvas>
+        </div>
         
-        <div id="result">
-            <canvas id="qrCanvas"></canvas>
-            <button onclick="downloadQR()" class="download-btn">📥 Scarica QR Code</button>
+        <!-- TAB 2: Stampa -->
+        <div id="printTab" class="tab-content">
+            <div class="qr-list-header">
+                <h3>📋 I tuoi QR Code</h3>
+                <div>
+                    <span class="qr-count" id="qrCount">0 QR</span>
+                </div>
+            </div>
+            
+            <div id="qrListContainer">
+                <div class="qr-list" id="qrList"></div>
+                
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state-icon">📭</div>
+                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">Nessun QR code in lista</p>
+                    <p style="font-size: 14px;">Genera o carica dei QR code per iniziare</p>
+                </div>
+            </div>
+            
+            <div class="print-controls" id="printControls" style="display: none;">
+                <h4 style="margin-bottom: 15px; color: #333;">⚙️ Impostazioni Stampa</h4>
+                
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label for="layoutSelect">Layout per pagina:</label>
+                        <select id="layoutSelect" onchange="updatePrintSummary()">
+                            <option value="2x4">2x4 (8 QR) - 8cm x 7cm</option>
+                            <option value="3x4" selected>3x4 (12 QR) - 6cm x 7cm</option>
+                            <option value="3x5">3x5 (15 QR) - 6cm x 5.5cm</option>
+                            <option value="4x5">4x5 (20 QR) - 4.5cm x 5.5cm</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="marginsSelect">Margini:</label>
+                        <select id="marginsSelect" onchange="updatePrintSummary()">
+                            <option value="5">Piccoli (5mm)</option>
+                            <option value="10" selected>Normali (10mm)</option>
+                            <option value="15">Grandi (15mm)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="info-box" id="printSummary"></div>
+                
+                <div class="button-group">
+                    <button class="button button-primary" onclick="generatePreview()">
+                        👁️ Anteprima
+                    </button>
+                    <button class="button button-success" onclick="printPages()">
+                        🖨️ Stampa
+                    </button>
+                </div>
+            </div>
+            
+            <div class="preview-container" id="previewContainer">
+                <p class="preview-title">Anteprima di stampa:</p>
+                <div id="pagesContainer"></div>
+            </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
-        let currentQRDataURL = null;
-
+        let qrList = [];
+        let qrCounter = 1;
+        
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Trova e attiva il tab corretto
+            const tabs = document.querySelectorAll('.tab');
+            if (tabName === 'generate') tabs[0].classList.add('active');
+            else if (tabName === 'print') tabs[1].classList.add('active');
+            
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+        
+        // Validazione URL
         function isValidURL(string) {
             try {
                 new URL(string);
@@ -173,58 +623,182 @@
                 return false;
             }
         }
-
-        function generateQR() {
+        
+        // Gestione Token Bitly
+        function checkBitlyToken() {
+            const token = localStorage.getItem('bitlyToken');
+            const tokenStatus = document.getElementById('bitlyTokenStatus');
+            const tokenInput = document.getElementById('bitlyTokenInput');
+            
+            if (token) {
+                tokenStatus.style.display = 'block';
+                tokenInput.style.display = 'none';
+            } else {
+                tokenStatus.style.display = 'none';
+                tokenInput.style.display = 'block';
+            }
+        }
+        
+        function saveBitlyToken() {
+            const tokenInput = document.getElementById('bitlyToken');
+            const token = tokenInput.value.trim();
+            
+            if (!token) {
+                alert('Inserisci un token valido');
+                return;
+            }
+            
+            localStorage.setItem('bitlyToken', token);
+            tokenInput.value = '';
+            checkBitlyToken();
+            alert('✅ Token salvato con successo!');
+        }
+        
+        function removeBitlyToken() {
+            if (confirm('Sei sicuro di voler rimuovere il token Bitly?')) {
+                localStorage.removeItem('bitlyToken');
+                checkBitlyToken();
+            }
+        }
+        
+        // Accorcia URL con Bitly
+        async function shortenWithBitly(longUrl, ingredient) {
+            const token = localStorage.getItem('bitlyToken');
+            
+            if (!token) {
+                throw new Error('Token Bitly non configurato');
+            }
+            
+            try {
+                const response = await fetch('https://api-ssl.bitly.com/v4/shorten', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        long_url: longUrl,
+                        title: ingredient || 'QR Code Ricette'
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Errore Bitly');
+                }
+                
+                const data = await response.json();
+                return data.link;
+            } catch (error) {
+                console.error('Errore Bitly:', error);
+                throw error;
+            }
+        }
+        
+        // Mostra/nascondi campi Bitly
+        document.getElementById('bitlyEnabled').addEventListener('change', function() {
+            const bitlyFields = document.getElementById('bitlyFields');
+            bitlyFields.style.display = this.checked ? 'block' : 'none';
+        });
+        
+        // Controlla token all'avvio
+        window.addEventListener('load', checkBitlyToken);
+        
+        // Genera QR Code
+        async function generateQR() {
             const urlInput = document.getElementById('urlInput');
+            const ingredientInput = document.getElementById('ingredientInput');
             const url = urlInput.value.trim();
+            const ingredient = ingredientInput.value.trim() || 'SCOPRI LE RICETTE';
             const errorMsg = document.getElementById('errorMsg');
-            const loading = document.getElementById('loading');
-            const result = document.getElementById('result');
-            const generateBtn = document.getElementById('generateBtn');
-
-            // Validazione
+            const bitlyEnabled = document.getElementById('bitlyEnabled').checked;
+            const btn = document.getElementById('generateButton');
+            
             errorMsg.style.display = 'none';
             
             if (!url || !isValidURL(url)) {
                 errorMsg.style.display = 'block';
                 return;
             }
-
-            // Mostra loading
-            loading.style.display = 'block';
-            generateBtn.disabled = true;
-            result.style.display = 'none';
-
-            // Simula un piccolo delay per l'effetto loading
-            setTimeout(() => {
-                createQRWithText(url);
-                loading.style.display = 'none';
-                generateBtn.disabled = false;
-                result.style.display = 'block';
-            }, 500);
+            
+            // Verifica token Bitly se abilitato
+            if (bitlyEnabled && !localStorage.getItem('bitlyToken')) {
+                alert('⚠️ Per usare Bitly, devi prima inserire il tuo Access Token');
+                return;
+            }
+            
+            // Disabilita pulsante e mostra loading
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Generazione in corso...';
+            
+            try {
+                let finalUrl = url;
+                
+                // Accorcia con Bitly se abilitato
+                if (bitlyEnabled) {
+                    try {
+                        finalUrl = await shortenWithBitly(url, ingredient);
+                        console.log('✅ URL accorciato:', finalUrl);
+                    } catch (error) {
+                        const retry = confirm('❌ Errore Bitly: ' + error.message + '\n\nVuoi generare il QR senza Bitly?');
+                        if (!retry) {
+                            btn.disabled = false;
+                            btn.textContent = originalText;
+                            return;
+                        }
+                        finalUrl = url; // Usa URL originale se Bitly fallisce
+                    }
+                }
+                
+                createQRWithText(finalUrl, ingredient, (dataURL) => {
+                    addQRToList({
+                        name: `${ingredient} - ${bitlyEnabled ? 'Bitly' : new URL(url).hostname}`,
+                        data: dataURL,
+                        url: finalUrl,
+                        originalUrl: url,
+                        ingredient: ingredient,
+                        tracked: bitlyEnabled
+                    });
+                    
+                    urlInput.value = '';
+                    ingredientInput.value = '';
+                    switchTab('print');
+                    
+                    // Feedback visivo
+                    btn.textContent = '✅ Aggiunto!';
+                    btn.style.background = '#4CAF50';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '';
+                        btn.disabled = false;
+                    }, 1500);
+                });
+            } catch (error) {
+                alert('❌ Errore durante la generazione: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         }
-
-        function createQRWithText(url) {
+        
+        function createQRWithText(url, text, callback) {
             const canvas = document.getElementById('qrCanvas');
             const ctx = canvas.getContext('2d');
             
-            // Dimensioni canvas
             const canvasSize = 400;
             const qrSize = 300;
             const textHeight = 60;
             
             canvas.width = canvasSize;
             canvas.height = canvasSize + textHeight;
-
-            // Sfondo bianco
+            
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Crea QR code temporaneo
+            
             const tempDiv = document.createElement('div');
             tempDiv.style.display = 'none';
             document.body.appendChild(tempDiv);
-
+            
             const qr = new QRCode(tempDiv, {
                 text: url,
                 width: qrSize,
@@ -233,45 +807,167 @@
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
-
-            // Aspetta che l'immagine sia generata
+            
             setTimeout(() => {
                 const qrImg = tempDiv.querySelector('img');
                 
-                // Disegna il testo sopra
                 ctx.fillStyle = '#333333';
                 ctx.font = 'bold 32px Arial, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('SCOPRI LE RICETTE', canvasSize / 2, 40);
-
-                // Disegna il QR code sotto il testo
+                ctx.fillText(text.toUpperCase(), canvasSize / 2, 40);
+                
                 const qrX = (canvasSize - qrSize) / 2;
                 const qrY = textHeight;
                 ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-
-                // Salva per il download
-                currentQRDataURL = canvas.toDataURL('image/png');
-
-                // Rimuovi elemento temporaneo
+                
+                const dataURL = canvas.toDataURL('image/png');
                 document.body.removeChild(tempDiv);
+                
+                callback(dataURL);
             }, 100);
         }
-
-        function downloadQR() {
-            if (!currentQRDataURL) return;
-
+        
+        // Gestione lista QR
+        function addQRToList(qr) {
+            qrList.push(qr);
+            updateQRList();
+        }
+        
+        function removeQR(index) {
+            qrList.splice(index, 1);
+            updateQRList();
+        }
+        
+        function downloadQR(index) {
+            const qr = qrList[index];
             const link = document.createElement('a');
-            link.download = 'qr-code-ricette.png';
-            link.href = currentQRDataURL;
+            link.download = qr.name.replace(/\s+/g, '-') + '.png';
+            link.href = qr.data;
             link.click();
         }
-
-        // Permetti di premere Enter per generare
+        
+        function updateQRList() {
+            const qrListEl = document.getElementById('qrList');
+            const emptyState = document.getElementById('emptyState');
+            const qrCount = document.getElementById('qrCount');
+            const printControls = document.getElementById('printControls');
+            
+            qrCount.textContent = `${qrList.length} QR`;
+            
+            if (qrList.length === 0) {
+                qrListEl.innerHTML = '';
+                emptyState.style.display = 'block';
+                printControls.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            printControls.style.display = 'block';
+            
+            qrListEl.innerHTML = qrList.map((qr, index) => `
+                <div class="qr-item">
+                    <img src="${qr.data}" alt="${qr.name}">
+                    <div class="qr-item-name">${qr.name}</div>
+                    ${qr.tracked ? '<div style="background: #4CAF50; color: white; font-size: 11px; padding: 3px 8px; border-radius: 12px; margin-bottom: 8px; display: inline-block;">📊 Tracked</div>' : ''}
+                    <div class="qr-item-actions">
+                        <button class="qr-item-btn btn-download" onclick="downloadQR(${index})">💾</button>
+                        <button class="qr-item-btn btn-remove" onclick="removeQR(${index})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            updatePrintSummary();
+        }
+        
+        // Stampa
+        function updatePrintSummary() {
+            const layout = document.getElementById('layoutSelect').value;
+            const [cols, rows] = layout.split('x').map(Number);
+            const perPage = cols * rows;
+            const totalPages = Math.ceil(qrList.length / perPage);
+            
+            document.getElementById('printSummary').innerHTML = `
+                <strong>📊 Riepilogo:</strong> ${qrList.length} QR code - ${totalPages} pagina/e A4 necessarie
+            `;
+        }
+        
+        function generatePreview() {
+            const layout = document.getElementById('layoutSelect').value;
+            const margins = document.getElementById('marginsSelect').value + 'mm';
+            const [cols, rows] = layout.split('x').map(Number);
+            const perPage = cols * rows;
+            
+            const pagesContainer = document.getElementById('pagesContainer');
+            const previewContainer = document.getElementById('previewContainer');
+            pagesContainer.innerHTML = '';
+            
+            const totalPages = Math.ceil(qrList.length / perPage);
+            
+            for (let page = 0; page < totalPages; page++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'a4-page';
+                pageDiv.style.padding = margins;
+                pageDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                pageDiv.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                
+                const startIdx = page * perPage;
+                const endIdx = Math.min(startIdx + perPage, qrList.length);
+                
+                // Linee di taglio
+                for (let i = 1; i < rows; i++) {
+                    const line = document.createElement('div');
+                    line.className = 'cut-line-horizontal';
+                    line.style.top = `calc(${i * 100 / rows}%)`;
+                    pageDiv.appendChild(line);
+                }
+                
+                for (let i = 1; i < cols; i++) {
+                    const line = document.createElement('div');
+                    line.className = 'cut-line-vertical';
+                    line.style.left = `calc(${i * 100 / cols}%)`;
+                    pageDiv.appendChild(line);
+                }
+                
+                // QR codes
+                for (let i = 0; i < perPage; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'qr-slot';
+                    
+                    if (startIdx + i < qrList.length) {
+                        const img = document.createElement('img');
+                        img.src = qrList[startIdx + i].data;
+                        slot.appendChild(img);
+                    }
+                    
+                    pageDiv.appendChild(slot);
+                }
+                
+                pagesContainer.appendChild(pageDiv);
+            }
+            
+            previewContainer.style.display = 'block';
+            
+            setTimeout(() => {
+                previewContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+        
+        function printPages() {
+            generatePreview();
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+        
+        // Enter per generare
         document.getElementById('urlInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 generateQR();
             }
         });
+        
+        // Inizializza
+        updateQRList();
     </script>
 </body>
 </html>
